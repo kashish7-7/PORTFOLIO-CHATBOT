@@ -1,0 +1,19 @@
+# Node & Frontend
+node_modules/
+dist/
+
+# Python & Backend
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+.pytest_cache/
+
+# Vercel
+.vercel/
+
+# Environment variables
+.env
+.env.*
+!.env.example

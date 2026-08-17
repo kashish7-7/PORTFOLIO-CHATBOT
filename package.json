@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-chatbot",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "cd backend && uvicorn main:app --reload --port 8000"
+  }
+}

@@ -19,8 +19,20 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-KB_PATH = Path(__file__).parent / "knowledge_base.md"
-KNOWLEDGE_BASE = KB_PATH.read_text(encoding="utf-8")
+def _load_knowledge_base() -> str:
+    current_dir = Path(__file__).resolve().parent
+    candidates = [
+        current_dir / "knowledge_base.md",
+        current_dir.parent / "knowledge_base.md",
+        Path.cwd() / "knowledge_base.md",
+        Path.cwd() / "backend" / "knowledge_base.md",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.read_text(encoding="utf-8")
+    return "No knowledge base file found."
+
+KNOWLEDGE_BASE = _load_knowledge_base()
 
 SYSTEM_PROMPT = f"""You are Kashish's portfolio assistant — a small chatbot embedded in her
 personal site so visitors (recruiters, engineers, curious people) can ask about her.
@@ -46,6 +58,7 @@ app = FastAPI(title="Kashish Portfolio Chatbot")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # tighten this to your deployed frontend domain before going live
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -60,14 +73,29 @@ class ChatResponse(BaseModel):
     reply: str
 
 
+@app.get("/")
+@app.get("/api")
+@app.get("/api/")
+def root():
+    return {
+        "status": "ok",
+        "message": "Kashish Portfolio Chatbot API is running.",
+        "model": GROQ_MODEL,
+        "endpoints": ["/api/health", "/api/chat"]
+    }
+
+
+@app.get("/health")
 @app.get("/api/health")
 def health():
     return {"status": "ok", "model": GROQ_MODEL}
 
 
+@app.post("/chat", response_model=ChatResponse)
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    if not GROQ_API_KEY:
+    api_key = os.getenv("GROQ_API_KEY") or GROQ_API_KEY
+    if not api_key:
         raise HTTPException(500, "GROQ_API_KEY is not set on the server.")
 
     if not req.message.strip():
@@ -79,14 +107,14 @@ async def chat(req: ChatRequest):
     messages.append({"role": "user", "content": req.message})
 
     payload = {
-        "model": GROQ_MODEL,
+        "model": os.getenv("GROQ_MODEL", GROQ_MODEL),
         "messages": messages,
         "temperature": 0.4,
         "max_tokens": 300,
     }
 
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
 
