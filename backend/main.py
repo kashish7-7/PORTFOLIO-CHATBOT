@@ -3,7 +3,6 @@ Portfolio chatbot backend — light on purpose.
 One route, one job: answer questions about Kashish using knowledge_base.md,
 and refuse anything that isn't in there. Powered by Groq's free API.
 """
-
 import os
 from pathlib import Path
 
