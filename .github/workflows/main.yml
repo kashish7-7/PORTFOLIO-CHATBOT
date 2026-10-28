@@ -38,7 +38,14 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
-        run: npm run build
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || secrets.BACKEND_URL || '' }}
+        run: |
+          if [ -n "$BACKEND_URL" ]; then
+            echo "Configuring backend URL: $BACKEND_URL"
+            sed -i "s|const BACKEND_BASE_URL = window.RENDER_BACKEND_URL || \"\";|const BACKEND_BASE_URL = \"$BACKEND_URL\";|g" index.html
+          fi
+          npm run build
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v6
