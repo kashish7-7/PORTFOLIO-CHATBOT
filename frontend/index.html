@@ -309,10 +309,9 @@ Not sure where to start? Try asking:
 </div>
 
 <script>
-  // Set your backend URL here once deployed on Render/Railway/HF, or leave "" for local proxy
-  // Example: "https://portfolio-chatbot-xyz.onrender.com"
-  const BACKEND_BASE_URL = window.RENDER_BACKEND_URL || "";
-  const API_URL = BACKEND_BASE_URL ? `${BACKEND_BASE_URL.replace(/\/+$/, '')}/api/chat` : "/api/chat";
+  // Connected to live Render backend
+  const BACKEND_BASE_URL = window.RENDER_BACKEND_URL || "https://portfolio-chatbot-wo98.onrender.com";
+  const API_URL = `${BACKEND_BASE_URL.replace(/\/+$/, '')}/api/chat`;
 
   const chatWindow = document.getElementById('chatWindow');
   const chatInput = document.getElementById('chatInput');
