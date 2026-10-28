@@ -93,7 +93,8 @@ def health():
 @app.post("/chat", response_model=ChatResponse)
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(req: ChatRequest):
-    api_key = os.getenv("GROQ_API_KEY") or GROQ_API_KEY
+    raw_key = os.getenv("GROQ_API_KEY") or GROQ_API_KEY
+    api_key = raw_key.strip() if raw_key else None
     if not api_key:
         raise HTTPException(500, "GROQ_API_KEY is not set on the server.")
 
@@ -105,8 +106,11 @@ async def chat(req: ChatRequest):
     messages += req.history[-6:]
     messages.append({"role": "user", "content": req.message})
 
+    raw_model = os.getenv("GROQ_MODEL", GROQ_MODEL)
+    model = raw_model.strip() if raw_model else "openai/gpt-oss-20b"
+
     payload = {
-        "model": os.getenv("GROQ_MODEL", GROQ_MODEL),
+        "model": model,
         "messages": messages,
         "temperature": 0.4,
         "max_tokens": 300,
